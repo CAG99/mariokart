@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>🏁 MARIO KART TURNERING 🏁</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mario-red: #e52521;
+    --mario-blue: #049cd8;
+    --mario-yellow: #fbd000;
+    --mario-green: #43b047;
+    --mario-dark: #1a1a3e;
+    --mario-sky: #5c94fc;
+    --mario-cloud: #fffefc;
+    --mario-brick: #c84c0c;
+    --mario-pipe: #00a800;
+    --shadow-hard: 4px 4px 0 rgba(0,0,0,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Fredoka', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #5c94fc 0%, #7bb3ff 50%, #43b047 50%, #2d7a2f 100%);
+    color: var(--mario-dark);
+    overflow-x: hidden;
+    position: relative;
+    image-rendering: pixelated;
+  }
+
+  /* Moving clouds */
+  .clouds {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 50vh;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .cloud {
+    position: absolute;
+    width: 120px; height: 50px;
+    background: var(--mario-cloud);
+    border-radius: 50px;
+    box-shadow:
+      30px -15px 0 -5px var(--mario-cloud),
+      -30px -10px 0 -5px var(--mario-cloud),
+      60px 0 0 -10px var(--mario-cloud);
+    animation: float-cloud linear infinite;
+    opacity: 0.9;
+  }
+  @keyframes float-cloud {
+    from { transform: translateX(-200px); }
+    to { transform: translateX(calc(100vw + 200px)); }
+  }
+
+  /* Pixel pattern ground */
+  .ground-pattern {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 30px;
+    background-image:
+      linear-gradient(90deg, #2d7a2f 50%, #43b047 50%),
+      linear-gradient(#2d7a2f, #2d7a2f);
+    background-size: 30px 30px, 100% 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Flying kart animation */
+  .flying-kart {
+    position: fixed;
+    bottom: 10%;
+    font-size: 2.5rem;
+    z-index: 1;
+    pointer-events: none;
+    animation: kart-race 8s linear infinite;
+  }
+  @keyframes kart-race {
+    0% { transform: translateX(-100px) rotate(-2deg); }
+    50% { transform: translateX(50vw) translateY(-20px) rotate(2deg); }
+    100% { transform: translateX(calc(100vw + 100px)) rotate(-2deg); }
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 40px 20px 30px;
+    position: relative;
+  }
+  h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(1.4rem, 4.5vw, 2.8rem);
+    color: var(--mario-yellow);
+    text-shadow:
+      3px 3px 0 var(--mario-red),
+      6px 6px 0 var(--mario-dark),
+      0 0 20px rgba(0,0,0,0.3);
+    letter-spacing: 2px;
+    line-height: 1.4;
+    animation: bounce-title 2s ease-in-out infinite;
+  }
+  @keyframes bounce-title {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .subtitle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    color: white;
+    margin-top: 16px;
+    text-shadow: 2px 2px 0 var(--mario-dark);
+    letter-spacing: 1px;
+  }
+
+  /* PANELS */
+  .panel {
+    background: white;
+    border: 4px solid var(--mario-dark);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-hard);
+    position: relative;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: -4px; left: -4px; right: -4px;
+    height: 8px;
+    background: var(--mario-red);
+    border-radius: 10px 10px 0 0;
+    border: 4px solid var(--mario-dark);
+    border-bottom: none;
+  }
+  .panel.blue::before { background: var(--mario-blue); }
+  .panel.green::before { background: var(--mario-green); }
+  .panel.yellow::before { background: var(--mario-yellow); }
+
+  .panel h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+    color: var(--mario-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 8px;
+  }
+
+  /* ADD PLAYER */
+  .add-player-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .add-player-row input {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 16px;
+    border: 3px solid var(--mario-dark);
+    border-radius: 8px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    background: #f7f7f7;
+  }
+  .add-player-row input:focus {
+    outline: none;
+    background: white;
+    box-shadow: inset 0 0 0 2px var(--mario-yellow);
+  }
+
+  button {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    padding: 14px 20px;
+    border: 3px solid var(--mario-dark);
+    border-radius: 8px;
+    background: var(--mario-red);
+    color: white;
+    cursor: pointer;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    box-shadow: 0 4px 0 var(--mario-dark);
+    transition: transform 0.1s, box-shadow 0.1s;
+    letter-spacing: 1px;
+  }
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--mario-dark);
+  }
+  button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--mario-dark);
+  }
+  button.green { background: var(--mario-green); }
+  button.blue { background: var(--mario-blue); }
+  button.yellow { background: var(--mario-yellow); color: var(--mario-dark); text-shadow: none; }
+  button:disabled {
+    background: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* PLAYER LIST */
+  .players-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .player-chip {
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    border: 3px solid var(--mario-dark);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: pop-in 0.4s ease-out;
+    position: relative;
+  }
+  @keyframes pop-in {
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(2deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .player-chip .character-icon {
+    font-size: 1.4rem;
+  }
+  .player-chip .remove {
+    margin-left: auto;
+    background: var(--mario-red);
+    color: white;
+    border: 2px solid var(--mario-dark);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    padding: 0;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+  }
+
+  /* GROUPS / GRID */
+  .round-info {
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    color: white;
+    font-size: 1rem;
+    padding: 16px;
+    background: var(--mario-dark);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0 var(--mario-red);
+    border: 3px solid var(--mario-yellow);
+    letter-spacing: 2px;
+  }
+
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .group-card {
+    background: white;
+    border: 4px solid var(--mario-dark);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-hard);
+    animation: slide-up 0.5s ease-out backwards;
+  }
+  .group-card:nth-child(1) { animation-delay: 0.05s; }
+  .group-card:nth-child(2) { animation-delay: 0.1s; }
+  .group-card:nth-child(3) { animation-delay: 0.15s; }
+  .group-card:nth-child(4) { animation-delay: 0.2s; }
+  .group-card:nth-child(5) { animation-delay: 0.25s; }
+  @keyframes slide-up {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .group-header {
+    padding: 12px 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.8rem;
+    color: white;
+    background: var(--mario-blue);
+    border-bottom: 4px solid var(--mario-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .group-header.completed { background: var(--mario-green); }
+  .group-header.wildcard { background: var(--mario-yellow); color: var(--mario-dark); }
+
+  .group-body {
+    padding: 16px;
+  }
+  .group-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #f7f7f7;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .group-player.has-position {
+    border-color: var(--mario-dark);
+    background: white;
+  }
+  .group-player.pos-1 { background: linear-gradient(90deg, #fff5b3, #fff); border-color: var(--mario-yellow); }
+  .group-player.pos-2 { background: linear-gradient(90deg, #e8e8e8, #fff); border-color: #999; }
+  .group-player.pos-3 { background: linear-gradient(90deg, #f0d4a8, #fff); border-color: #cd7f32; }
+  .group-player.pos-4 { background: linear-gradient(90deg, #ffdddd, #fff); border-color: var(--mario-red); }
+
+  .position-select {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.65rem;
+    padding: 6px 8px;
+    border: 2px solid var(--mario-dark);
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    margin-left: auto;
+  }
+
+  .advances-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--mario-green);
+    color: white;
+    margin-left: 8px;
+  }
+  .advances-badge.eliminated { background: #999; }
+
+  /* EMPTY SLOT */
+  .empty-slot {
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 2px dashed #aaa;
+    border-radius: 6px;
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    background: #fafafa;
+  }
+
+  /* FINISH BUTTON */
+  .finish-group-btn {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--mario-green);
+  }
+
+  /* WINNER SCREEN */
+  .winner-celebration {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .winner-celebration h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1.8rem;
+    color: var(--mario-yellow);
+    text-shadow: 4px 4px 0 var(--mario-red), 8px 8px 0 var(--mario-dark);
+    margin-bottom: 20px;
+    animation: rainbow-pulse 2s ease-in-out infinite;
+  }
+  @keyframes rainbow-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .winner-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 2.5rem;
+    color: var(--mario-red);
+    margin: 20px 0;
+    text-shadow: 3px 3px 0 var(--mario-yellow);
+  }
+  .winner-char {
+    font-size: 5rem;
+    animation: spin-winner 1.5s ease-in-out infinite;
+    display: inline-block;
+  }
+  @keyframes spin-winner {
+    0%, 100% { transform: rotate(-10deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.15); }
+  }
+
+  /* CONFETTI */
+  .confetti {
+    position: fixed;
+    width: 10px; height: 10px;
+    pointer-events: none;
+    z-index: 100;
+    animation: confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall {
+    to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: #666;
+    font-size: 1.05rem;
+  }
+  .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* RACE ANIMATION OVERLAY */
+  .race-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .race-overlay.active { display: flex; }
+  .race-track {
+    width: 90%;
+    max-width: 600px;
+    background: var(--mario-dark);
+    border: 4px solid var(--mario-yellow);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+  }
+  .race-lane {
+    height: 40px;
+    background: linear-gradient(90deg, #333 0%, #333 100%);
+    background-image: repeating-linear-gradient(90deg, #333 0 20px, #444 20px 40px);
+    margin: 10px 0;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  .race-lane::after {
+    content: '🏁';
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+  }
+  .race-racer {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.8rem;
+    left: 0;
+    transition: left 3s cubic-bezier(0.4, 0.8, 0.4, 1);
+  }
+  .race-title {
+    color: var(--mario-yellow);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* BUTTONS ROW */
+  .actions-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  /* CHAMPIONS OF PREVIOUS ROUNDS */
+  .history-round {
+    background: #f0f0f0;
+    border-left: 4px solid var(--mario-yellow);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+  }
+  .history-round h4 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.2rem; }
+    .panel { padding: 16px; }
+    .groups-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background scenery -->
+<div class="clouds">
+  <div class="cloud" style="top: 10%; animation-duration: 35s; animation-delay: 0s;"></div>
+  <div class="cloud" style="top: 25%; animation-duration: 50s; animation-delay: -10s; transform: scale(0.7);"></div>
+  <div class="cloud" style="top: 5%; animation-duration: 40s; animation-delay: -25s; transform: scale(1.2);"></div>
+  <div class="cloud" style="top: 18%; animation-duration: 45s; animation-delay: -5s; transform: scale(0.9);"></div>
+</div>
+<div class="ground-pattern"></div>
+<div class="flying-kart" style="animation-delay: -2s;">🏎️</div>
+<div class="flying-kart" style="animation-delay: -5s; bottom: 5%; animation-duration: 10s;">🛵</div>
+
+<div class="container">
+
+  <header>
+    <h1>🍄 MARIO KART<br>TURNERING 🏁</h1>
+    <div class="subtitle">★ HOLTE GRAND PRIX ★</div>
+  </header>
+
+  <!-- ADD PLAYER PANEL -->
+  <div class="panel">
+    <h2>🎮 Legg til deltaker</h2>
+    <div class="add-player-row">
+      <input type="text" id="playerName" placeholder="Navn på spiller..." maxlength="20">
+      <button onclick="addPlayer()">+ LEGG TIL</button>
+    </div>
+    <div id="playersList" class="players-list"></div>
+    <div class="actions-row">
+      <button class="green" id="startBtn" onclick="startTournament()">🏁 START TURNERING</button>
+      <button class="yellow" onclick="resetTournament()">↺ NULLSTILL</button>
+    </div>
+    <div id="emptyState" class="empty-state">
+      <span class="empty-state-icon">🎪</span>
+      Legg til minst 4 deltakere for å starte!
+    </div>
+  </div>
+
+  <!-- TOURNAMENT PANEL -->
+  <div class="panel blue" id="tournamentPanel" style="display: none;">
+    <h2>🏆 Turnering pågår</h2>
+    <div class="round-info" id="roundInfo">RUNDE 1</div>
+    <div id="groupsGrid" class="groups-grid"></div>
+    <div class="actions-row" id="roundActions" style="display:none;">
+      <button class="green" onclick="advanceToNextRound()">➤ NESTE RUNDE</button>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel yellow" id="historyPanel" style="display: none;">
+    <h2>📜 Tidligere runder</h2>
+    <div id="historyContent"></div>
+  </div>
+
+  <!-- WINNER PANEL -->
+  <div class="panel green" id="winnerPanel" style="display: none;">
+    <div class="winner-celebration">
+      <div class="winner-char" id="winnerChar">👑</div>
+      <h2>MESTER!</h2>
+      <div class="winner-name" id="winnerName"></div>
+      <p style="font-weight: 600; margin-top: 20px;">Gratulerer til årets Mario Kart-mester! 🎉</p>
+      <button class="blue" style="margin-top: 20px;" onclick="resetTournament()">↺ NY TURNERING</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- RACE ANIMATION OVERLAY -->
+<div class="race-overlay" id="raceOverlay">
+  <div class="race-track">
+    <div class="race-title" id="raceTitle">🏁 LØP STARTER!</div>
+    <div id="raceLanes"></div>
+  </div>
+</div>
+
+<script>
+  // Mario characters pool
+  const CHARACTERS = ['🍄', '🐢', '🦖', '👸', '🧌', '⭐', '🌸', '🔥', '💎', '🐙', '🦔', '🌙', '🌀', '🍌', '🎃', '🦄', '🐸', '🦀', '🐉', '🦊'];
+
+  let state = {
+    players: [],        // all players ever added
+    currentRound: 1,
+    groups: [],         // current round groups
+    history: [],        // past rounds
+    tournamentActive: false,
+    pendingPlayers: [], // players added mid-tournament, waiting for next round
+    champion: null
+  };
+
+  // Load from memory only (no localStorage in artifacts)
+  function saveState() { /* in-memory only */ }
+
+  function getCharacter(index) {
+    return CHARACTERS[index % CHARACTERS.length];
+  }
+
+  // ==== PLAYER MANAGEMENT ====
+  function addPlayer() {
+    const input = document.getElementById('playerName');
+    const name = input.value.trim();
+    if (!name) return;
+    if (state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+      input.value = '';
+      shake(input);
+      return;
+    }
+    const player = {
+      id: Date.now() + Math.random(),
+      name: name,
+      character: getCharacter(state.players.length)
+    };
+    state.players.push(player);
+
+    // If tournament is running, add to pending
+    if (state.tournamentActive) {
+      state.pendingPlayers.push(player);
+    }
+
+    input.value = '';
+    input.focus();
+    renderPlayers();
+    renderTournament();
+  }
+
+  function shake(el) {
+    el.style.animation = 'none';
+    setTimeout(() => el.style.animation = 'shake 0.4s', 10);
+  }
+
+  function removePlayer(id) {
+    if (state.tournamentActive) return;
+    state.players = state.players.filter(p => p.id !== id);
+    // re-assign characters
+    state.players.forEach((p, i) => p.character = getCharacter(i));
+    renderPlayers();
+  }
+
+  function renderPlayers() {
+    const list = document.getElementById('playersList');
+    const emptyState = document.getElementById('emptyState');
+    const startBtn = document.getElementById('startBtn');
+
+    list.innerHTML = '';
+    state.players.forEach(p => {
+      const chip = document.createElement('div');
+      chip.className = 'player-chip';
+      chip.innerHTML = `
+        <span class="character-icon">${p.character}</span>
+        <span>${escapeHtml(p.name)}</span>
+        ${state.tournamentActive ? '' : `<button class="remove" onclick="removePlayer(${p.id})">×</button>`}
+      `;
+      list.appendChild(chip);
+    });
+
+    if (state.players.length === 0) {
+      emptyState.style.display = 'block';
+      emptyState.innerHTML = '<span class="empty-state-icon">🎪</span>Legg til minst 4 deltakere for å starte!';
+    } else if (state.players.length < 4 && !state.tournamentActive) {
+      emptyState.style.display = 'block';
+      emptyState.innerHTML = `<span class="empty-state-icon">⏳</span>${4 - state.players.length} deltaker(e) igjen før start!`;
+    } else {
+      emptyState.style.display = 'none';
+    }
+
+    startBtn.disabled = state.players.length < 4 || state.tournamentActive;
+
+    if (state.tournamentActive && state.pendingPlayers.length > 0) {
+      emptyState.style.display = 'block';
+      emptyState.innerHTML = `<span class="empty-state-icon">⏳</span>${state.pendingPlayers.length} ny(e) spiller(e) venter på neste runde!`;
+    }
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  // ==== TOURNAMENT LOGIC ====
+  function startTournament() {
+    if (state.players.length < 4) return;
+    state.tournamentActive = true;
+    state.currentRound = 1;
+    state.groups = createGroups(state.players);
+    renderPlayers();
+    renderTournament();
+    launchConfetti(30);
+  }
+
+  function createGroups(players) {
+    // Shuffle
+    const shuffled = [...players].sort(() => Math.random() - 0.5);
+    const groups = [];
+    for (let i = 0; i < shuffled.length; i += 4) {
+      const chunk = shuffled.slice(i, i + 4);
+      groups.push({
+        id: `g-${state.currentRound}-${groups.length}`,
+        players: chunk.map(p => ({ ...p, position: null })),
+        completed: false,
+        isWildcard: chunk.length < 4
+      });
+    }
+    return groups;
+  }
+
+  function setPosition(groupId, playerId, position) {
+    const group = state.groups.find(g => g.id === groupId);
+    if (!group) return;
+    position = position ? parseInt(position) : null;
+
+    // Clear any other player with same position in this group
+    if (position) {
+      group.players.forEach(p => {
+        if (p.position === position && p.id !== playerId) p.position = null;
+      });
+    }
+
+    const player = group.players.find(p => p.id === playerId);
+    if (player) player.position = position;
+
+    renderTournament();
+  }
+
+  function finishGroup(groupId) {
+    const group = state.groups.find(g => g.id === groupId);
+    if (!group) return;
+
+    // Validate all positions filled
+    const positions = group.players.map(p => p.position).filter(Boolean);
+    const requiredCount = group.players.length;
+    if (positions.length !== requiredCount || new Set(positions).size !== requiredCount) {
+      alert('Alle spillere i gruppen må ha unik plassering (1-' + requiredCount + ')!');
+      return;
+    }
+
+    // Play race animation then mark completed
+    playRaceAnimation(group, () => {
+      group.completed = true;
+      renderTournament();
+    });
+  }
+
+  function allGroupsCompleted() {
+    return state.groups.length > 0 && state.groups.every(g => g.completed);
+  }
+
+  function advanceToNextRound() {
+    // Collect advancing players (top 2 from each group)
+    const advancing = [];
+    state.groups.forEach(group => {
+      const sorted = [...group.players].sort((a, b) => a.position - b.position);
+      // For wildcard/smaller groups, top 2 still advance (or top half)
+      const advanceCount = Math.min(2, Math.ceil(group.players.length / 2));
+      advancing.push(...sorted.slice(0, advanceCount));
+    });
+
+    // Save history
+    state.history.push({
+      round: state.currentRound,
+      groups: JSON.parse(JSON.stringify(state.groups))
+    });
+
+    // Check for champion
+    if (advancing.length === 1) {
+      state.champion = advancing[0];
+      state.tournamentActive = false;
+      renderTournament();
+      renderHistory();
+      showWinner();
+      return;
+    }
+
+    // If only 2-3 left, make one final group
+    // Add pending players (new additions during tournament)
+    const nextRoundPlayers = [...advancing, ...state.pendingPlayers];
+    state.pendingPlayers = [];
+
+    state.currentRound++;
+    state.groups = createGroups(nextRoundPlayers);
+    renderTournament();
+    renderHistory();
+    renderPlayers();
+    launchConfetti(20);
+  }
+
+  function renderTournament() {
+    const panel = document.getElementById('tournamentPanel');
+    const grid = document.getElementById('groupsGrid');
+    const roundInfo = document.getElementById('roundInfo');
+    const roundActions = document.getElementById('roundActions');
+
+    if (!state.tournamentActive && !state.champion) {
+      panel.style.display = 'none';
+      return;
+    }
+    if (state.champion) {
+      panel.style.display = 'none';
+      return;
+    }
+
+    panel.style.display = 'block';
+    const isFinal = state.groups.length === 1 && state.groups[0].players.length <= 4;
+    roundInfo.textContent = isFinal && state.groups[0].players.length <= 2
+      ? '🏆 FINALE 🏆'
+      : `RUNDE ${state.currentRound} — ${state.groups.length} gruppe(r)`;
+
+    grid.innerHTML = '';
+    state.groups.forEach((group, gIdx) => {
+      const card = document.createElement('div');
+      card.className = 'group-card';
+
+      const headerClass = group.completed ? 'completed' : (group.isWildcard ? 'wildcard' : '');
+      const headerIcon = group.completed ? '✓' : (group.isWildcard ? '★' : `#${gIdx + 1}`);
+
+      let bodyHTML = '';
+      group.players.forEach(player => {
+        const posClass = player.position ? `pos-${player.position}` : '';
+        const advances = group.completed && player.position && player.position <= 2;
+        const badge = group.completed
+          ? (advances
+            ? '<span class="advances-badge">VIDERE</span>'
+            : '<span class="advances-badge eliminated">UTE</span>')
+          : '';
+
+        let selectOptions = '<option value="">—</option>';
+        for (let i = 1; i <= group.players.length; i++) {
+          selectOptions += `<option value="${i}" ${player.position === i ? 'selected' : ''}>${getPositionLabel(i)}</option>`;
+        }
+
+        bodyHTML += `
+          <div class="group-player ${posClass} ${player.position ? 'has-position' : ''}">
+            <span style="font-size: 1.3rem;">${player.character}</span>
+            <span>${escapeHtml(player.name)}</span>
+            ${group.completed
+              ? `<span style="margin-left:auto; font-weight:700;">${getPositionLabel(player.position)}</span>${badge}`
+              : `<select class="position-select" onchange="setPosition('${group.id}', ${player.id}, this.value)">
+                   ${selectOptions}
+                 </select>`
+            }
+          </div>
+        `;
+      });
+
+      // Fill empty slots for visual consistency if group < 4
+      if (group.players.length < 4 && !group.completed) {
+        for (let i = group.players.length; i < 4; i++) {
+          bodyHTML += `<div class="empty-slot">Venter på deltaker...</div>`;
+        }
+      }
+
+      if (!group.completed) {
+        bodyHTML += `<button class="finish-group-btn" onclick="finishGroup('${group.id}')">🏁 FULLFØR LØP</button>`;
+      }
+
+      card.innerHTML = `
+        <div class="group-header ${headerClass}">
+          <span>GRUPPE ${headerIcon}</span>
+          <span>${group.players.length} spillere</span>
+        </div>
+        <div class="group-body">${bodyHTML}</div>
+      `;
+      grid.appendChild(card);
+    });
+
+    roundActions.style.display = allGroupsCompleted() ? 'flex' : 'none';
+  }
+
+  function getPositionLabel(pos) {
+    if (!pos) return '—';
+    return ['🥇 1.', '🥈 2.', '🥉 3.', '4.'][pos - 1] || pos + '.';
+  }
+
+  function renderHistory() {
+    const panel = document.getElementById('historyPanel');
+    const content = document.getElementById('historyContent');
+    if (state.history.length === 0) {
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = 'block';
+    content.innerHTML = '';
+    state.history.forEach(round => {
+      const div = document.createElement('div');
+      div.className = 'history-round';
+      const winners = [];
+      round.groups.forEach(g => {
+        const sorted = [...g.players].sort((a,b) => a.position - b.position);
+        const top2 = sorted.slice(0, 2).map(p => `${p.character} ${p.name}`);
+        winners.push(top2.join(', '));
+      });
+      div.innerHTML = `
+        <h4>RUNDE ${round.round}</h4>
+        <div style="font-size: 0.9rem;">Videre: ${winners.join(' • ')}</div>
+      `;
+      content.appendChild(div);
+    });
+  }
+
+  function showWinner() {
+    const panel = document.getElementById('winnerPanel');
+    document.getElementById('winnerName').textContent = state.champion.name;
+    document.getElementById('winnerChar').textContent = state.champion.character;
+    panel.style.display = 'block';
+    launchConfetti(100);
+    setTimeout(() => launchConfetti(50), 800);
+    setTimeout(() => launchConfetti(50), 1600);
+  }
+
+  function resetTournament() {
+    if (state.tournamentActive || state.champion) {
+      if (!confirm('Er du sikker? All fremgang går tapt.')) return;
+    }
+    state = {
+      players: [],
+      currentRound: 1,
+      groups: [],
+      history: [],
+      tournamentActive: false,
+      pendingPlayers: [],
+      champion: null
+    };
+    document.getElementById('winnerPanel').style.display = 'none';
+    document.getElementById('historyPanel').style.display = 'none';
+    document.getElementById('tournamentPanel').style.display = 'none';
+    renderPlayers();
+  }
+
+  // ==== RACE ANIMATION ====
+  function playRaceAnimation(group, onDone) {
+    const overlay = document.getElementById('raceOverlay');
+    const lanes = document.getElementById('raceLanes');
+    const title = document.getElementById('raceTitle');
+    title.textContent = '🏁 LØP PÅGÅR...';
+
+    lanes.innerHTML = '';
+    // Sort: positioned player info reveals finish order
+    const sorted = [...group.players].sort((a, b) => a.position - b.position);
+
+    sorted.forEach((player, idx) => {
+      const lane = document.createElement('div');
+      lane.className = 'race-lane';
+      lane.innerHTML = `<div class="race-racer" id="racer-${player.id}">${player.character}</div>`;
+      lanes.appendChild(lane);
+    });
+
+    overlay.classList.add('active');
+
+    // Start race — animate based on finishing position
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        sorted.forEach((player, idx) => {
+          const racer = document.getElementById(`racer-${player.id}`);
+          // Better position = faster finish (shorter delay before reaching end)
+          // We vary the transition duration slightly so the finishing order matches
+          const baseDuration = 2.5 + (player.position - 1) * 0.4;
+          racer.style.transition = `left ${baseDuration}s cubic-bezier(0.4, 0.9, 0.5, 1)`;
+          setTimeout(() => {
+            racer.style.left = 'calc(100% - 50px)';
+          }, 50 + Math.random() * 200);
+        });
+      }, 300);
+
+      setTimeout(() => {
+        title.innerHTML = '🏆 MÅLGANG!';
+      }, 3200);
+
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        // Reset lanes
+        lanes.innerHTML = '';
+        onDone();
+        launchConfetti(15);
+      }, 4200);
+    });
+  }
+
+  // ==== CONFETTI ====
+  function launchConfetti(count) {
+    const colors = ['#e52521', '#049cd8', '#fbd000', '#43b047', '#ff6ec7', '#ffffff'];
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.top = '-20px';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDuration = (2 + Math.random() * 2) + 's';
+      c.style.animationDelay = Math.random() * 0.5 + 's';
+      if (Math.random() > 0.5) c.style.borderRadius = '50%';
+      else c.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 4500);
+    }
+  }
+
+  // Enter key adds player
+  document.getElementById('playerName').addEventListener('keypress', e => {
+    if (e.key === 'Enter') addPlayer();
+  });
+
+  // Inject shake animation
+  const sheet = document.createElement('style');
+  sheet.textContent = `
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+  `;
+  document.head.appendChild(sheet);
+
+  // Initial render
+  renderPlayers();
+</script>
+</body>
+</html>
